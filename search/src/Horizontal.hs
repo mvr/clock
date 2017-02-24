@@ -64,15 +64,6 @@ findPosFor ring1 ring2 lr = do
   else
     []
 
-findAllPos ring1 ring2 lr = do
-  i <- [0 .. length ring1 - 1]
-  j <- [0 .. length ring2 - 1]
-
-  if isRepresenting' lr (rotateRing i ring1) (rotateRing j ring2) then
-    [(i, j)]
-  else
-    []
-
 test1 = [False, False, False, False, False, True, True, False, False, False, True, False, False, True]
 test2 = [False, False, True, True, False, True, False, False, False, True, False, False, False, False]
 lookup = [((True,True,True,True,True,True),[(4,9),(11,2)]),
