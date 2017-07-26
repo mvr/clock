@@ -6,22 +6,28 @@ type Ring = [SBool]
 
 isRepresenting :: (SBool, SBool, SBool, SBool) -> Ring -> Ring -> SBool
 isRepresenting (l1, l2, r1, r2) ring1 ring2
-  =   (((ring1 !! 0) ||| (ring2 !! 0))           .== l1)
-  &&& (((ring1 !! 1) ||| (ring2 !! 1))           .== l2)
-  &&& (((ring1 !! h1) ||| (ring2 !! h1))         .== r2)
-  &&& (((ring1 !! h2) ||| (ring2 !! h2))         .== r1)
+  =   (((ring1 !! 0) ||| (ring2 !! 0))           .== false)
+  &&& (((ring1 !! 1) ||| (ring2 !! 1))           .== l1)
+  &&& (((ring1 !! 2) ||| (ring2 !! 2))           .== l2)
+  &&& (((ring1 !! 3) ||| (ring2 !! 3))           .== false)
+  &&& (((ring1 !! h1) ||| (ring2 !! h1))         .== false)
+  &&& (((ring1 !! h2) ||| (ring2 !! h2))         .== r2)
+  &&& (((ring1 !! h3) ||| (ring2 !! h3))         .== r1)
+  &&& (((ring1 !! h4) ||| (ring2 !! h4))         .== false)
   where halfway = length ring1 `quot` 2
         h1 = halfway
         h2 = halfway + 1
+        h3 = halfway + 2
+        h4 = halfway + 3
 
-isRepresenting' (l1, l2, r1, r2) ring1 ring2
-  =   (((ring1 !! 0) ||| (ring2 !! 0))           == l1)
-  &&& (((ring1 !! 1) ||| (ring2 !! 1))           == l2)
-  &&& (((ring1 !! h1) ||| (ring2 !! h1))         == r2)
-  &&& (((ring1 !! h2) ||| (ring2 !! h2))         == r1)
-  where halfway = length ring1 `quot` 2
-        h1 = halfway
-        h2 = halfway + 1
+-- isRepresenting' (l1, l2, r1, r2) ring1 ring2
+--   =   (((ring1 !! 0) ||| (ring2 !! 0))           == l1)
+--   &&& (((ring1 !! 1) ||| (ring2 !! 1))           == l2)
+--   &&& (((ring1 !! h1) ||| (ring2 !! h1))         == r2)
+--   &&& (((ring1 !! h2) ||| (ring2 !! h2))         == r1)
+--   where halfway = length ring1 `quot` 2
+--         h1 = halfway
+--         h2 = halfway + 1
 
 rotateRing :: Int -> [a] -> [a]
 rotateRing _ [] = []
@@ -60,14 +66,14 @@ allPairs = do
   r2 <- [true, false]
   return (l1, l2, r1, r2)
 
-findPosFor ring1 ring2 lr = do
-  i <- [0 .. length ring1 - 1]
-  j <- [0 .. length ring2 - 1]
+-- findPosFor ring1 ring2 lr = do
+--   i <- [0 .. length ring1 - 1]
+--   j <- [0 .. length ring2 - 1]
 
-  if isRepresenting' lr (rotateRing i ring1) (rotateRing j ring2) then
-    [(i, j)]
-  else
-    []
+--   if isRepresenting' lr (rotateRing i ring1) (rotateRing j ring2) then
+--     [(i, j)]
+--   else
+--     []
 
 test1 = [False, True, False, False, True, True, False, False, False, False, False, False, True, False]
 test2 = [False, False, False, False, True, False, True, False, False, False, False, False, True, True]

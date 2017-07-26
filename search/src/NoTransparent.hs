@@ -12,15 +12,12 @@ module Overlay where
 import Data.SBV
 import Data.Monoid
 
-data Segment = Transparent | Black | White
-mkSymbolicEnumeration ''Segment
-type SSegment = SBV Segment
+type Segment = Bool
+type SSegment = SBool
 
-black, white, transparent :: SSegment
-black = literal Black
-white = literal White
-transparent = literal Transparent
-
+black, white :: SSegment
+black = true
+white = false
 
 data HRing = HRing [SSegment] deriving (Eq, Show)
 data VRing = VRing [SSegment] deriving (Eq, Show)
@@ -46,33 +43,26 @@ data OutputF a = Output { lv1 :: (a, a, a, a),
 type Output = OutputF SSegment
 
 instance Monoid Segment where
-  mempty = Transparent
-  a `mappend` Transparent = a
-  _ `mappend` b = b
+  mempty = false
+  mappend = (|||)
 
 instance Monoid SSegment where
-  mempty = transparent
-  a `mappend` b = ite (b .== transparent) a b
+  mempty = false
+  mappend = (|||)
 
 instance Monoid Layer where
   (Layer (VRing v1) (HRing h) (VRing v2)) `mappend` (Layer (VRing v1') (HRing h') (VRing v2'))
     = (Layer (VRing $ v1 <> v1') (HRing $ h <> h') (VRing $ v2 <> v2'))
 
 instance Monoid Output where
-  mempty = Output (transparent, transparent, transparent, transparent)
-                  (transparent, transparent, transparent)
-                  (transparent, transparent, transparent, transparent)
-                  (transparent, transparent, transparent, transparent)
-                  (transparent, transparent, transparent)
-                  (transparent, transparent, transparent, transparent)
+  mempty = Output (white, white, white, white)
+                  (white, white, white)
+                  (white, white, white, white)
+                  (white, white, white, white)
+                  (white, white, white)
+                  (white, white, white, white)
   (Output lv1 lh lv2 rv1 rh rv2) `mappend` (Output lv1' lh' lv2' rv1' rh' rv2')
     = Output (lv1 <> lv1') (lh <> lh') (lv2 <> lv2') (rv1 <> rv1') (rh <> rh') (rv2 <> rv2')
-
-finalSegment :: SSegment -> SSegment
-finalSegment s = white <> s
-
-finalOutput :: Output -> Output
-finalOutput = fmap finalSegment
 
 outputSEq :: Output -> Output -> SBool
 outputSEq (Output lv1 lh lv2 rv1 rh rv2) (Output lv1' lh' lv2' rv1' rh' rv2')
@@ -121,7 +111,7 @@ clockIndices c@(Clock ls) = sequence $ replicate layerCount [0 .. (size - 1)]
         layerCount = length ls
 
 clockDisplaying :: Clock -> [Int] -> Output
-clockDisplaying (Clock ls) ixs = finalOutput $ mconcat $ fmap (\(l, ix) -> layerDisplaying $ rotateLayer ix l) $ zip ls ixs
+clockDisplaying (Clock ls) ixs = mconcat $ fmap (\(l, ix) -> layerDisplaying $ rotateLayer ix l) $ zip ls ixs
 
 canDisplay :: Clock -> (Int, Int) -> SBool
 canDisplay c lr = bAny (\ixs -> goal `outputSEq` clockDisplaying c ixs) (clockIndices c)
@@ -137,7 +127,6 @@ allDigits = do
   l <- [0..9]
   r <- [0..5]
   return (l, r)
-
 
 findClock s l = satWith (z3{verbose=True}) $ do
   ls <- traverse (const $ makeLayer s) [1 .. l]
